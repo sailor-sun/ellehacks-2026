@@ -11,10 +11,10 @@ const formSchema = z
     comments: z.string().optional(),
   })
   .refine(
-    (data) =>
-      data.image ||
-      (data.link && data.link.trim() !== "") ||
-      (data.comments && data.comments.trim() !== ""),
+    (v) =>
+      v.image ||
+      (v.link && v.link.trim() !== "") ||
+      (v.comments && v.comments.trim() !== ""),
     { message: "You must upload something or add a comment.", path: ["comments"] }
   );
 
@@ -33,22 +33,22 @@ export default function Form() {
 
   const values = watch();
   const canAnalyze =
-    values.image || values.link?.trim() !== "" || values.comments?.trim() !== "";
+    !!values.image || values.link?.trim() !== "" || values.comments?.trim() !== "";
 
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<any>(null);
   const [uploadUrl, setUploadUrl] = React.useState<string>("");
 
-  async function onSubmit(data: FormData) {
+  async function onSubmit(form: FormData) {
     setLoading(true);
     setResult(null);
 
     try {
       let image_url = "";
 
-      // 1) 이미지가 있으면 Vercel Blob로 직접 업로드
-      if (data.image instanceof File) {
-        const file = data.image as File;
+      // 1) 이미지가 있으면 Vercel Blob 업로드
+      if (form.image instanceof File) {
+        const file = form.image as File;
 
         const blob = await upload(file.name, file, {
           access: "public",
@@ -61,11 +61,11 @@ export default function Form() {
 
       // 2) analyze로 URL만 보내기
       const payload = {
-        messages_text: "", // 필요하면 여기에 복붙 대화 내용 넣기
+        messages_text: "",
         user_context: "",
-        link_url: data.link || "",
-        extra_notes: data.comments || "",
-        image_url, // 핵심: base64 대신 URL
+        link_url: form.link || "",
+        extra_notes: form.comments || "",
+        image_url,
       };
 
       const res = await fetch("/api/analyze", {
@@ -74,8 +74,22 @@ export default function Form() {
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
-      setResult(json);
+      const text = await res.text();
+
+      // 3) JSON이 아니어도 에러 본문(raw) 노출
+      let parsed: any;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = { error: "Non-JSON response from /api/analyze", raw: text };
+      }
+
+      if (!res.ok) {
+        setResult({ status: res.status, ...parsed });
+        return;
+      }
+
+      setResult(parsed);
     } catch (e: any) {
       setResult({ error: "Failed", detail: String(e?.message || e) });
     } finally {
@@ -106,7 +120,10 @@ export default function Form() {
           />
           {uploadUrl && (
             <div style={{ fontSize: 12, marginTop: 6 }}>
-              Uploaded: <a href={uploadUrl} target="_blank" rel="noreferrer">open</a>
+              Uploaded:{" "}
+              <a href={uploadUrl} target="_blank" rel="noreferrer">
+                open
+              </a>
             </div>
           )}
         </div>
@@ -141,7 +158,7 @@ export default function Form() {
 
       {result && (
         <pre style={{ marginTop: 16, background: "#f7f7f7", padding: 12, overflowX: "auto" }}>
-{JSON.stringify(result, null, 2)}
+          {JSON.stringify(result, null, 2)}
         </pre>
       )}
     </div>
