@@ -1,19 +1,28 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
-export const config = {
-  runtime: "edge",
-};
-
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "content-type": "application/json" },
-    });
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const body = (await request.json()) as HandleUploadBody;
+    const body = (req.body || {}) as HandleUploadBody;
+
+    const host = req.headers.host || "localhost";
+    const proto =
+      (req.headers["x-forwarded-proto"] as string) ||
+      (host.includes("localhost") ? "http" : "https");
+
+    // handleUpload가 표준 Request를 요구해서 Node req를 Request로 변환
+    const request = new Request(`${proto}://${host}${req.url || "/api/upload"}`, {
+      method: "POST",
+      headers: new Headers(
+        Object.entries(req.headers)
+          .filter(([, v]) => typeof v === "string") as Array<[string, string]>
+      ),
+      body: JSON.stringify(body),
+    });
 
     const jsonResponse = await handleUpload({
       body,
@@ -26,19 +35,14 @@ export default async function handler(request: Request): Promise<Response> {
           tokenPayload: JSON.stringify({ purpose: "scam-analysis" }),
         };
       },
-      onUploadCompleted: async () => {
-        // MVP에서는 비워도 됨
-      },
+      onUploadCompleted: async () => {},
     });
 
-    return new Response(JSON.stringify(jsonResponse), {
-      status: 200,
-      headers: { "content-type": "application/json" },
+    return res.status(200).json(jsonResponse);
+  } catch (err: any) {
+    return res.status(500).json({
+      error: "Upload failed",
+      detail: String(err?.message || err),
     });
-  } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: "Upload token failed", detail: String(e?.message || e) }),
-      { status: 500, headers: { "content-type": "application/json" } }
-    );
   }
 }
