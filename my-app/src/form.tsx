@@ -181,7 +181,7 @@ export default function FormPage() {
 const styles: { [k: string]: React.CSSProperties } = {
   page: {
     minHeight: "100vh",
-    background: "linear-gradient(180deg, #0b1f4a 0%, #1a3275 100%)",
+    background: "linear-gradient(180deg, #e6f0ff 0%, #1a3275 100%)",
     padding: 40,
     display: "flex",
     justifyContent: "center",
