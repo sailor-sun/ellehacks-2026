@@ -131,9 +131,13 @@ const styles: { [k: string]: React.CSSProperties } = {
     padding: 24,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
     lineHeight: 1.6,
-    background: "#0b1f4a", // dark blue page bg
-    borderRadius: 16,
-    color: "#cce0ff", // light text
+  },
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(180deg, #0b1f4a 0%, #1a3275 100%)",
+    padding: 40,
+    display: "flex",
+    justifyContent: "center",
   },
   title: { 
     marginBottom: 24,
@@ -148,7 +152,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     marginBottom: 18,
   },
   card: {
-    background: "#f0f6ff", // same as form background
+    background: "#f0f6ff", // light card bg
     borderRadius: 16,
     padding: 16,
     boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
@@ -178,7 +182,7 @@ const styles: { [k: string]: React.CSSProperties } = {
     transition: "width 0.35s ease",
   },
   section: {
-    background: "#f0f6ff", // match form background
+    background: "#f0f6ff", // light section bg
     borderRadius: 16,
     padding: 18,
     marginTop: 14,
@@ -187,7 +191,7 @@ const styles: { [k: string]: React.CSSProperties } = {
   },
   muted: { color: "#6b7280", fontSize: 14 },
   link: {
-    color: "#ff7f50", // match analyze button orange
+    color: "#ff7f50", // orange like analyze button
     fontWeight: 700,
     textDecoration: "underline",
   },
