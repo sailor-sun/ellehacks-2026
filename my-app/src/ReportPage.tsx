@@ -125,24 +125,14 @@ export default function ReportPage() {
 }
 
 const styles: { [k: string]: React.CSSProperties } = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(180deg, #0b1f4a 0%, #1a3275 100%)",
-    padding: 40,
-    display: "flex",
-    justifyContent: "center",
-  },
   container: {
-    maxWidth: 780,
-    width: "100%",
+    maxWidth: 820,
+    margin: "40px auto",
+    padding: 24,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+    lineHeight: 1.6,
   },
-  title: {
-    marginBottom: 24,
-    color: "#cce0ff",
-    textAlign: "center",
-    fontSize: 28,
-  },
+  title: { marginBottom: 18 },
   topRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -150,11 +140,10 @@ const styles: { [k: string]: React.CSSProperties } = {
     marginBottom: 18,
   },
   card: {
-    background: "#f0f6ff",
-    borderRadius: 16,
+    background: "#fff",
+    borderRadius: 12,
     padding: 16,
-    boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
-    color: "#0b3d91",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
   },
   cardTitle: { fontWeight: 700, marginBottom: 8 },
   badge: {
@@ -180,16 +169,15 @@ const styles: { [k: string]: React.CSSProperties } = {
     transition: "width 0.35s ease",
   },
   section: {
-    background: "#f0f6ff",
-    borderRadius: 16,
+    background: "#fff",
+    borderRadius: 12,
     padding: 18,
     marginTop: 14,
-    boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
-    color: "#0b3d91",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
   },
   muted: { color: "#6b7280", fontSize: 14 },
   link: {
-    color: "#ff7f50",
+    color: "#111827",
     fontWeight: 700,
     textDecoration: "underline",
   },
