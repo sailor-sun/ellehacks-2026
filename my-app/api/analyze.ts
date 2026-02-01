@@ -1,10 +1,7 @@
 // my-app/api/analyze.ts
+// CommonJS 스타일로 작성 (import 금지)
 
-import type { NextApiRequest, NextApiResponse } from "next";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { del } from "@vercel/blob";
-
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: any, res: any) => {
   // ---- CORS 필요하면 사용 ----
   // res.setHeader("Access-Control-Allow-Origin", "*");
   // res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
@@ -19,6 +16,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   let image_url = "";
 
   try {
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const { del } = require("@vercel/blob");
+
     const body = req.body || {};
     const messages_text = String(body.messages_text || "");
     const user_context = String(body.user_context || "");
@@ -31,7 +31,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
     }
 
-    // ---- PROMPT ----
     const prompt = `
 You are a digital safety and scam-risk analysis assistant.
 
@@ -61,10 +60,9 @@ extra_notes:
 ${extra_notes}
 `.trim();
 
-    // ---- Gemini init ----
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // ❗ 핵심 수정: gemini-pro ❌ → gemini-2.0-flash ✅
+    // ✅ 모델명 수정
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig: {
@@ -73,9 +71,9 @@ ${extra_notes}
       },
     });
 
-    // ---- parts (text + optional image) ----
     const parts: any[] = [{ text: prompt }];
 
+    // ---- image_url 있으면 이미지도 같이 보냄 ----
     if (image_url) {
       try {
         const resp = await fetch(image_url);
@@ -84,14 +82,14 @@ ${extra_notes}
           const len = resp.headers.get("content-length");
           const size = len ? Number(len) : NaN;
 
+          // 안전장치: 5MB 제한
           if (!Number.isNaN(size) && size > 5 * 1024 * 1024) {
-            parts[0].text += `\n\nIMAGE_NOTE: Image too large (${size} bytes).`;
+            parts[0].text += `\n\nIMAGE_NOTE: Image too large to fetch (${size} bytes).`;
           } else if (!contentType.startsWith("image/")) {
-            parts[0].text += `\n\nIMAGE_NOTE: Not an image (${contentType}).`;
+            parts[0].text += `\n\nIMAGE_NOTE: image_url content-type is not image: ${contentType}`;
           } else {
             const buf = await resp.arrayBuffer();
             const b64 = Buffer.from(buf).toString("base64");
-
             parts.push({
               inlineData: {
                 mimeType: contentType || "image/jpeg",
@@ -100,20 +98,20 @@ ${extra_notes}
             });
           }
         } else {
-          parts[0].text += `\n\nIMAGE_NOTE: Failed to fetch image (${resp.status}).`;
+          parts[0].text += `\n\nIMAGE_NOTE: Failed to fetch image_url. status=${resp.status}`;
         }
       } catch (e: any) {
-        parts[0].text += `\n\nIMAGE_NOTE: ${String(e?.message || e)}`;
+        parts[0].text += `\n\nIMAGE_NOTE: Exception fetching image_url: ${String(
+          e?.message || e
+        )}`;
       }
     }
 
-    // ---- Gemini call ----
     const result = await model.generateContent(parts);
-    const text = result.response.text();
+    const text = result?.response?.text?.() ?? "";
 
-    // ---- JSON parsing (robust) ----
+    // ---- JSON 파싱 (실패하면 raw 포함해서 반환) ----
     let parsed: any = null;
-
     try {
       parsed = JSON.parse(text);
     } catch {
@@ -128,32 +126,22 @@ ${extra_notes}
       }
     }
 
-    // ---- normalize output ----
+    // 기본 정규화
     if (parsed && typeof parsed === "object") {
-      parsed.summary = typeof parsed.summary === "string" ? parsed.summary : "";
-      parsed.risk_level =
-        parsed.risk_level === "low" ||
-        parsed.risk_level === "medium" ||
-        parsed.risk_level === "high"
-          ? parsed.risk_level
-          : "medium";
+      const n = Number(parsed.confidence);
+      parsed.confidence = Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0;
 
-      const conf = Number(parsed.confidence);
-      parsed.confidence =
-        Number.isFinite(conf) ? Math.max(0, Math.min(1, conf)) : 0;
+      if (!Array.isArray(parsed.red_flags)) parsed.red_flags = [];
+      if (!Array.isArray(parsed.inconsistencies)) parsed.inconsistencies = [];
+      if (!Array.isArray(parsed.next_steps)) parsed.next_steps = [];
 
-      parsed.red_flags = Array.isArray(parsed.red_flags)
-        ? parsed.red_flags
-        : [];
-      parsed.inconsistencies = Array.isArray(parsed.inconsistencies)
-        ? parsed.inconsistencies
-        : [];
-      parsed.next_steps = Array.isArray(parsed.next_steps)
-        ? parsed.next_steps
-        : [];
+      if (typeof parsed.summary !== "string") parsed.summary = String(parsed.summary || "");
+      if (!["low", "medium", "high"].includes(parsed.risk_level)) {
+        parsed.risk_level = "medium";
+      }
     }
 
-    // ---- cleanup vercel blob (best effort) ----
+    // Blob cleanup (best effort)
     if (image_url && image_url.includes("blob.vercel-storage.com")) {
       try {
         await del(image_url);
@@ -177,4 +165,4 @@ ${extra_notes}
   }
 };
 
-export default handler;
+module.exports = handler;
