@@ -183,36 +183,52 @@ export default function FormPage() {
 }
 
 const styles: { [k: string]: React.CSSProperties } = {
+   page: {
+    minHeight: "100vh",
+    padding: 40,
+    display: "flex",
+    justifyContent: "center",
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+    background: "linear-gradient(180deg, #0b2e6d 0%, #1a4aa6 100%)", // dark-blue gradient
+  },
+  
   container: {
     maxWidth: 780,
     margin: "40px auto",
     padding: 24,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-    backgroundColor: "#0b1f4a", // dark blue page background
+    background: "linear-gradient(180deg, #e6f0ff 0%, #ffffff 100%)",
     borderRadius: 16,
-    color: "#ffffff",
   },
-  title: { marginBottom: 24, textAlign: "center" },
+  title: { 
+    marginBottom: 24, 
+    color: "#0b3d91",
+    textAlign: "center",
+    fontSize: 28,
+  },
   form: {
-    background: "#1e2f6e", // lighter blue form
+    background: "#f0f6ff",
     borderRadius: 16,
     padding: 24,
-    boxShadow: "0 12px 28px rgba(0,0,0,0.3)",
-    color: "#ffffff",
+    boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
   },
-  label: { display: "block", marginBottom: 16, fontWeight: 600, color: "#cce0ff" },
+  label: { 
+    display: "block", 
+    marginBottom: 16, 
+    fontWeight: 600, 
+    color: "#0b3d91"
+  },
   textarea: {
     width: "100%",
     minHeight: 90,
     marginTop: 6,
     padding: 12,
     borderRadius: 10,
-    border: "1px solid #3f7fe1",
+    border: "1px solid #a3c4f3",
     fontWeight: 400,
-    background: "#2a3b7a",
-    color: "#ffffff",
-    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.2)",
     resize: "vertical",
+    background: "#ffffff",
+    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.05)",
     transition: "border 0.2s",
   },
   input: {
@@ -220,11 +236,10 @@ const styles: { [k: string]: React.CSSProperties } = {
     marginTop: 6,
     padding: 12,
     borderRadius: 10,
-    border: "1px solid #3f7fe1",
+    border: "1px solid #a3c4f3",
     fontWeight: 400,
-    background: "#2a3b7a",
-    color: "#ffffff",
-    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.2)",
+    background: "#ffffff",
+    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.05)",
     transition: "border 0.2s",
   },
   button: {
@@ -235,17 +250,21 @@ const styles: { [k: string]: React.CSSProperties } = {
     border: "none",
     fontWeight: 700,
     fontSize: 16,
-    background: "linear-gradient(90deg, #3f7fe1, #0b3d91)",
+    background: "linear-gradient(90deg, #0b3d91, #3f7fe1)",
     color: "#fff",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     transition: "transform 0.2s, box-shadow 0.2s",
+  },
+  buttonHover: {
+    transform: "translateY(-2px)",
+    boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
   },
   error: {
     marginTop: 8,
     marginBottom: 6,
-    color: "#ffb3b3",
-    background: "#3f1f2f",
-    border: "1px solid #ff6b6b",
+    color: "#b91c1c",
+    background: "#fef2f2",
+    border: "1px solid #fecaca",
     borderRadius: 10,
     padding: 10,
     fontSize: 14,
