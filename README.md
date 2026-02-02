@@ -32,6 +32,10 @@
    - Red flags
    - Recommended next steps
 
+
+## For Developers
+- Make sure to create a .env.local with the GEMINI API key in the same folder as the package.json to ensure the project works.
+
 ---
 
 ## Challenges
