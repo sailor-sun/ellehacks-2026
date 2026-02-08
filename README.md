@@ -27,7 +27,10 @@
 2. The input is sent securely to the AI system.
 3. The AI analyzes scam indicators.
 4. The system returns:
-   - Risk level
+   - Risk level prompts
+      - High risk: Brad Pitt is asking me to lend him money because he is in the hospital.
+      - Medium risk: My friends friend is asking for my phone to make a call.
+      - Low risk: My friend is asking for my email to send me the slides I asked her to. 
    - Confidence score
    - Red flags
    - Recommended next steps
